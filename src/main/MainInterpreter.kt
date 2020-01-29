@@ -1,5 +1,14 @@
 package main
 
 fun main(){
-    println("initial commit")
+    val currentBaseClass = MainInterpreterBase()
+
+    currentBaseClass.`print final interpreted output`()
+}
+
+class MainInterpreterBase{
+
+    fun `print final interpreted output`(){
+        println("initial commit")
+    }
 }
