@@ -1,18 +1,25 @@
 package main
 
+import org.junit.jupiter.params.provider.Arguments
+import java.util.stream.Stream
+
 
 fun main(){
     val currentBaseClass = MainInterpreterBase()
-    currentBaseClass.printfinalOutput()
+    currentBaseClass.printFinalOutput()
 }
-
-
 
 class MainInterpreterBase{
 
-    init {
-        var BracketStack = setOf<Char>()
-    }
+    private var bracketStack = Stack<Char>()
+    private lateinit var localCleanedUpCommand: String
+    private var commandStack = setOf<Stack<Char>>()
+    private var counterOpeningBrackets = 0
+    private var counterClosingBrackets = 0
+
+    val isStackValid: Boolean
+        get() = counterClosingBrackets == counterOpeningBrackets
+
 
     companion object{
         @JvmStatic
@@ -32,46 +39,73 @@ class MainInterpreterBase{
                 "["
     }
 
-    private enum class ValidCharacters (val PairOfCommands: Pair<Char, Char>){
+    private enum class ValidCharacters (val pairOfCommands: Pair<Char, Char>){
         PointerIncrementDecrement(Pair('>', '<')),
         PointerValueIncrementDecrement (Pair('+', '-')),
         PutGetChar (Pair('.', ',')),
-        WhileLoop(Pair('[', ']')),
+        WhileLoop(Pair('[', ']'))
     }
 
-    fun printfinalOutput(){
+    fun printFinalOutput(){
         println(outputOfCurrentText)
     }
 
     fun enumClassContains(currentCharacter: Char): Boolean {
         return enumValues<ValidCharacters>().any {
-            it.PairOfCommands.first == currentCharacter || it.PairOfCommands.second == currentCharacter
+            it.pairOfCommands.first == currentCharacter || it.pairOfCommands.second == currentCharacter
         }
     }
 
     fun cleanedUpVariable (input: String): String {
         var cleanedUpCommand = ""
         input.forEach { char ->
-            if (enumClassContains(char))
+            if (enumClassContains(char)) {
                 cleanedUpCommand += char
+                checkValidCommandCharInput(char)
+            }
         }
+        localCleanedUpCommand = cleanedUpCommand
         return cleanedUpCommand
     }
 
-    fun getComplementaryPairValue (givenValue: Char): Char {
-            ValidCharacters.values().find {
-                  (it.PairOfCommands.first == givenValue)
-                    return complementOfPair(it.PairOfCommands, givenValue)
-            }
-            ValidCharacters.values().find {
-                (it.PairOfCommands.second == givenValue)
-                return complementOfPair(it.PairOfCommands, givenValue)
-            }
-
+    fun getComplementaryPairValue (currentChar: Char): Char{
+        ValidCharacters.values().forEach {
+            if (it.pairOfCommands.first == currentChar)
+                return it.pairOfCommands.second
+            else if (it.pairOfCommands.second == currentChar)
+                return it.pairOfCommands.first
+        }
+        return currentChar
     }
 
-    fun complementOfPair(currentPair: Pair<Char, Char>, givenChar: Char): Char{
-        return if (currentPair.first == givenChar) currentPair.second else currentPair.first
+    fun addCommandToLocalStack(){
+        bracketStack.add(localCleanedUpCommand.toList())
+    }
+
+    fun addNewCommand(command: String){
+        localCleanedUpCommand = cleanedUpVariable(command)
+        if (!isStackValid)
+            println("Your command isn't valid")
+        return
+    }
+
+
+    private fun splitCommandsToSets(){
+        if (isStackValid) {
+            localCleanedUpCommand.split('[', ']', ignoreCase = true).forEach { command ->
+                commandStack += Stack(command.toList())
+            }
+        }
+        else
+            println("Your command is not valid")
+    }
+
+    private fun checkValidCommandCharInput(currentCharacter: Char) {
+        when (currentCharacter) {
+            '[' -> ++counterOpeningBrackets
+            ']' -> ++counterClosingBrackets
+            else -> return
+        }
     }
 
 }

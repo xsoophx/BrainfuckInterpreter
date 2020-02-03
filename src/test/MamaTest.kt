@@ -9,15 +9,17 @@ import java.util.stream.Stream
 
 internal class MamaTest {
     private lateinit var newBaseClass: MainInterpreterBase
+    private lateinit var localStackTest: StackTest
 
     @BeforeEach
     fun SetUp(){
         newBaseClass = MainInterpreterBase()
+        localStackTest = StackTest()
     }
 
     companion object {
         @JvmStatic
-        fun `Data for testing interpreter`() = Stream.of(
+        fun `data for testing interpreter`() = Stream.of(
             Arguments.of(
                 "Here will be test Objects for interpreting",
                 MainInterpreterBase.outputOfCurrentText
@@ -25,7 +27,7 @@ internal class MamaTest {
         )
 
         @JvmStatic
-        fun `Strings with Brackets` () = Stream.of(
+        fun `strings with brackets` () = Stream.of(
             Arguments.of(
                     "[This is another Test]", "[]"
             ),
@@ -53,7 +55,7 @@ internal class MamaTest {
             )
         )
         @JvmStatic
-        fun `Matching opening and closing chars`()= Stream.of(
+        fun `matching opening and closing chars`()= Stream.of(
             Arguments.of(
                 "+++++ +++               Set Cell #0 to 8\n" +
                         " 2 [" , 9
@@ -64,7 +66,7 @@ internal class MamaTest {
         )
         )
         @JvmStatic
-        fun `Valid and invalid Chars`()= Stream.of(
+        fun `valid and invalid chars`()= Stream.of(
             Arguments.of(
                 '+' , true),
             Arguments.of(
@@ -73,32 +75,70 @@ internal class MamaTest {
                 'f', false
         )
         )
+
+        @JvmStatic
+        fun `complementary brackets`()= Stream.of(
+            Arguments.of(
+                '<' , '>'),
+            Arguments.of(
+                '.', ','),
+            Arguments.of(
+                '-', '+'),
+            Arguments.of(']', '[')
+        )
+
+        @JvmStatic
+        fun `small commands`() = Stream.of(
+            Arguments.of(
+                "[+++]", true
+            ),
+            Arguments.of(
+                "[+++", false
+            ),
+            Arguments.of(
+                "", true
+            )
+        )
         }
 
     @ParameterizedTest
-    @MethodSource("Matching opening and closing chars")
+    @MethodSource("matching opening and closing chars")
     fun `Count opening and closing symbols`(actualInput: String, expected: Int){
         var numberOfCharsInInput = newBaseClass.cleanedUpVariable(actualInput)
         assertEquals(expected, numberOfCharsInInput.count())
     }
 
     @ParameterizedTest
-    @MethodSource("Valid and invalid Chars")
+    @MethodSource("valid and invalid chars")
     fun `Does enum class contain character`(actualInput: Char, expected: Boolean){
         var enumContainsChar = newBaseClass.enumClassContains(actualInput)
         assertEquals(expected, enumContainsChar)
     }
 
     @Disabled
-    @MethodSource("Data for testing interpreter")
-    fun`Test correct output after interpreting`(expected: String, actualOutput: String){
+    @MethodSource("data for testing interpreter")
+    fun `Test correct output after interpreting`(expected: String, actualOutput: String){
        assertEquals( "Here will be test Objects for interpreting", actualOutput)
     }
 
     @ParameterizedTest
-    @MethodSource("Strings with Brackets")
-    fun `Everything between actual BF chars should be removed`(actualInput: String, expected: String){
+    @MethodSource("strings with brackets")
+    fun `Everything between actual BrainFuck chars should be removed`(actualInput: String, expected: String){
         var cleanedUpString = newBaseClass.cleanedUpVariable(actualInput)
         assertEquals(expected, cleanedUpString)
+    }
+
+    @ParameterizedTest
+    @MethodSource("complementary brackets")
+    fun `return complementary value to given Bracket`(actualInput: Char, expected: Char){
+        var complementaryValue = newBaseClass.getComplementaryPairValue(actualInput)
+        assertEquals(expected, complementaryValue)
+    }
+
+    @ParameterizedTest
+    @MethodSource("small commands")
+    fun `Check if command is valid`(actualInput: String, expectedStackValue: Boolean){
+        newBaseClass.addNewCommand(actualInput)
+        assertEquals(expectedStackValue, newBaseClass.isStackValid)
     }
 }
