@@ -1,19 +1,21 @@
-import main.MainInterpreterBase
+import main.Interpreter
 import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import java.lang.AssertionError
 import java.util.stream.Stream
 
 internal class MamaTest {
-    private lateinit var newBaseClass: MainInterpreterBase
+    private lateinit var interpreter: Interpreter
     private lateinit var localStackTest: StackTest
 
     @BeforeEach
-    fun SetUp(){
-        newBaseClass = MainInterpreterBase()
+    fun SetUp() {
+        interpreter = Interpreter()
         localStackTest = StackTest()
     }
 
@@ -22,14 +24,14 @@ internal class MamaTest {
         fun `data for testing interpreter`() = Stream.of(
             Arguments.of(
                 "Here will be test Objects for interpreting",
-                MainInterpreterBase.outputOfCurrentText
-                )
+                Interpreter.outputOfCurrentText
+            )
         )
 
         @JvmStatic
-        fun `strings with brackets` () = Stream.of(
+        fun `strings with brackets`() = Stream.of(
             Arguments.of(
-                    "[This is another Test]", "[]"
+                "[This is another Test]", "[]"
             ),
             Arguments.of(
                 "++++++++++\n" +
@@ -54,36 +56,43 @@ internal class MamaTest {
                         "------.--------.>+.>.+++."
             )
         )
+
         @JvmStatic
-        fun `matching opening and closing chars`()= Stream.of(
+        fun `matching opening and closing chars`() = Stream.of(
             Arguments.of(
                 "+++++ +++               Set Cell #0 to 8\n" +
-                        " 2 [" , 9
+                        " 2 [", 9
             ),
             Arguments.of(
                 "[<]", 3
 
-        )
-        )
-        @JvmStatic
-        fun `valid and invalid chars`()= Stream.of(
-            Arguments.of(
-                '+' , true),
-            Arguments.of(
-                '>', true),
-            Arguments.of(
-                'f', false
-        )
+            )
         )
 
         @JvmStatic
-        fun `complementary brackets`()= Stream.of(
+        fun `valid and invalid chars`() = Stream.of(
             Arguments.of(
-                '<' , '>'),
+                '+', true
+            ),
             Arguments.of(
-                '.', ','),
+                '>', true
+            ),
             Arguments.of(
-                '-', '+'),
+                'f', false
+            )
+        )
+
+        @JvmStatic
+        fun `complementary brackets`() = Stream.of(
+            Arguments.of(
+                '<', '>'
+            ),
+            Arguments.of(
+                '.', ','
+            ),
+            Arguments.of(
+                '-', '+'
+            ),
             Arguments.of(']', '[')
         )
 
@@ -99,46 +108,58 @@ internal class MamaTest {
                 "", true
             )
         )
-        }
 
-    @ParameterizedTest
-    @MethodSource("matching opening and closing chars")
-    fun `Count opening and closing symbols`(actualInput: String, expected: Int){
-        var numberOfCharsInInput = newBaseClass.cleanedUpVariable(actualInput)
-        assertEquals(expected, numberOfCharsInInput.count())
+        @JvmStatic
+        fun `real Brainfuck commands`() = Stream.of(
+            Arguments.of(
+                "--------[-->+++<]>.------------.+.++++++++++.+[---->+<]>+++.-[--->++<]>-.++++++++++.+[---->+<]>+++." +
+                        "[->+++<]>+.-[->+++<]>.---[->++++<]>.+++[->+++<]>.[--->+<]>----.+.",
+                "this is a test"
+            )
+        )
     }
 
     @ParameterizedTest
     @MethodSource("valid and invalid chars")
-    fun `Does enum class contain character`(actualInput: Char, expected: Boolean){
-        var enumContainsChar = newBaseClass.enumClassContains(actualInput)
+    fun `Does enum class contain character`(input: Char, expected: Boolean) {
+        var enumContainsChar = interpreter.enumClassContains(input)
         assertEquals(expected, enumContainsChar)
     }
 
-    @Disabled
-    @MethodSource("data for testing interpreter")
-    fun `Test correct output after interpreting`(expected: String, actualOutput: String){
-       assertEquals( "Here will be test Objects for interpreting", actualOutput)
-    }
 
     @ParameterizedTest
     @MethodSource("strings with brackets")
-    fun `Everything between actual BrainFuck chars should be removed`(actualInput: String, expected: String){
-        var cleanedUpString = newBaseClass.cleanedUpVariable(actualInput)
+    fun `Everything between actual BrainFuck chars should be removed`(input: String, expected: String) {
+        val cleanedUpString = interpreter.cleanedUpVariable(input)
         assertEquals(expected, cleanedUpString)
     }
 
     @ParameterizedTest
     @MethodSource("complementary brackets")
-    fun `return complementary value to given Bracket`(actualInput: Char, expected: Char){
-        var complementaryValue = newBaseClass.getComplementaryPairValue(actualInput)
+    fun `return complementary value to given Bracket`(input: Char, expected: Char) {
+        val complementaryValue = interpreter.getComplementaryPairValue(input)
         assertEquals(expected, complementaryValue)
     }
 
     @ParameterizedTest
     @MethodSource("small commands")
-    fun `Check if command is valid`(actualInput: String, expectedStackValue: Boolean){
-        newBaseClass.addNewCommand(actualInput)
-        assertEquals(expectedStackValue, newBaseClass.isStackValid)
+    fun `Check if command is valid`(input: String, shouldBeValid: Boolean) {
+        if (shouldBeValid) {
+            assertDoesNotThrow {
+                interpreter.addNewCommand(input)
+            }
+        } else {
+            assertThrows<AssertionError> {
+                interpreter.addNewCommand(input)
+            }
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("real Brainfuck commands")
+    fun `Check if script is interpreted right`(input: String, validOutput: String) {
+        interpreter.addNewCommand(input)
+        assertEquals(validOutput, interpreter.interpretCommand())
+
     }
 }
