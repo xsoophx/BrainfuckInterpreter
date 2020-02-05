@@ -5,7 +5,6 @@ import java.lang.IllegalArgumentException
 
 fun main() {
     val currentBaseClass = Interpreter()
-    currentBaseClass.printFinalOutput()
 }
 
 class Interpreter {
@@ -19,33 +18,11 @@ class Interpreter {
 
     fun similarBrackets(): Boolean = (counterClosingBrackets == counterOpeningBrackets) && (overallBracketCounter < 0)
 
-
-    companion object {
-        val outputOfCurrentText = "Here will be test Objects for interpreting"
-
-        val inputCommand = "[ This program prints \"Hello World!\" and a newline to the screen, its\n" +
-                "  length is 106 active command characters. [It is not the shortest.]\n" +
-                "\n" +
-                "  This loop is an \"initial comment loop\", a simple way of adding a comment\n" +
-                "  to a BF program such that you don't have to worry about any command\n" +
-                "  characters. Any \".\", \",\", \"+\", \"-\", \"<\" and \">\" characters are simply\n" +
-                "  ignored, the \"[\" and \"]\" characters just have to be balanced. This\n" +
-                "  loop and the commands it contains are ignored because the current cell\n" +
-                "  defaults to a value of 0; the 0 value causes this loop to be skipped.\n" +
-                "]\n" +
-                "++++++++               Set Cell #0 to 8\n" +
-                "["
-    }
-
     private enum class ValidCharacters(val pairOfCommands: Pair<Char, Char>) {
         PointerIncrementDecrement(Pair('>', '<')),
         PointerValueIncrementDecrement(Pair('+', '-')),
         PutGetChar(Pair('.', ',')),
         WhileLoop(Pair('[', ']'))
-    }
-
-    fun printFinalOutput() {
-        println(outputOfCurrentText)
     }
 
     fun enumClassContains(currentCharacter: Char): Boolean {
@@ -78,17 +55,6 @@ class Interpreter {
 
     }
 
-    fun getComplementaryPairValue(currentChar: Char): Char {
-        ValidCharacters.values().forEach {
-            if (it.pairOfCommands.first == currentChar)
-                return it.pairOfCommands.second
-            else if (it.pairOfCommands.second == currentChar)
-                return it.pairOfCommands.first
-        }
-        return currentChar
-    }
-
-
     fun addNewCommand(command: String) {
         localCleanedUpCommand = cleanedUpVariable(command)
         if (!isStackValid)
@@ -96,17 +62,6 @@ class Interpreter {
         return
     }
 
-    private fun checkValidCommandCharInput(currentCharacter: Char) {
-        when (currentCharacter) {
-            '[' -> {
-                ++overallBracketCounter; ++counterOpeningBrackets
-            }
-            ']' -> {
-                --overallBracketCounter; ++counterClosingBrackets
-            }
-            else -> return
-        }
-    }
 
     fun interpretCommand(): String{
         val loopMap = BracketHelpStack(localCleanedUpCommand).getHelpMap()

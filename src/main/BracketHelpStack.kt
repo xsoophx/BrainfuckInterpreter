@@ -32,7 +32,6 @@ class BracketHelpStack(command: String) {
                 pushStack(index)
             if (element == ']') {
                 val startingPosition = popStack()
-                loopList[startingPosition] = index
                 loopList[index] = startingPosition
             }
         }

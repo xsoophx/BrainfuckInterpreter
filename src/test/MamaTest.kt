@@ -20,13 +20,6 @@ internal class MamaTest {
     }
 
     companion object {
-        @JvmStatic
-        fun `data for testing interpreter`() = Stream.of(
-            Arguments.of(
-                "Here will be test Objects for interpreting",
-                Interpreter.outputOfCurrentText
-            )
-        )
 
         @JvmStatic
         fun `strings with brackets`() = Stream.of(
@@ -153,13 +146,6 @@ internal class MamaTest {
     fun `Everything between actual BrainFuck chars should be removed`(input: String, expected: String) {
         val cleanedUpString = interpreter.cleanedUpVariable(input)
         assertEquals(expected, cleanedUpString)
-    }
-
-    @ParameterizedTest
-    @MethodSource("complementary brackets")
-    fun `return complementary value to given Bracket`(input: Char, expected: Char) {
-        val complementaryValue = interpreter.getComplementaryPairValue(input)
-        assertEquals(expected, complementaryValue)
     }
 
     @ParameterizedTest
