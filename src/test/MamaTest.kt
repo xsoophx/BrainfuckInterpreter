@@ -1,6 +1,5 @@
 import main.Interpreter
 import org.junit.Assert.assertEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
@@ -10,14 +9,7 @@ import java.lang.AssertionError
 import java.util.stream.Stream
 
 internal class MamaTest {
-    private lateinit var interpreter: Interpreter
-    private lateinit var localStackTest: StackTest
 
-    @BeforeEach
-    fun SetUp() {
-        interpreter = Interpreter()
-        localStackTest = StackTest()
-    }
 
     companion object {
 
@@ -103,7 +95,7 @@ internal class MamaTest {
         )
 
         @JvmStatic
-        fun `real Brainfuck commands`() = Stream.of(
+        fun `real brainFuck commands`() = Stream.of(
             Arguments.of(
                 "--------[-->+++<]>.------------.+.++++++++++.+[---->+<]>+++.-[--->++<]>-.++++++++++.+[---->+<]>+++." +
                         "[->+++<]>+.-[->+++<]>.---[->++++<]>.+++[->+++<]>.[--->+<]>----.+.",
@@ -136,7 +128,8 @@ internal class MamaTest {
     @ParameterizedTest
     @MethodSource("valid and invalid chars")
     fun `Does enum class contain character`(input: Char, expected: Boolean) {
-        var enumContainsChar = interpreter.enumClassContains(input)
+        val interpreter = Interpreter()
+        val enumContainsChar = interpreter.enumClassContains(input)
         assertEquals(expected, enumContainsChar)
     }
 
@@ -144,6 +137,7 @@ internal class MamaTest {
     @ParameterizedTest
     @MethodSource("strings with brackets")
     fun `Everything between actual BrainFuck chars should be removed`(input: String, expected: String) {
+        val interpreter = Interpreter()
         val cleanedUpString = interpreter.cleanedUpVariable(input)
         assertEquals(expected, cleanedUpString)
     }
@@ -151,22 +145,23 @@ internal class MamaTest {
     @ParameterizedTest
     @MethodSource("small commands")
     fun `Check if command is valid`(input: String, shouldBeValid: Boolean) {
+        val interpreter = Interpreter()
         if (shouldBeValid) {
             assertDoesNotThrow {
-                interpreter.addNewCommand(input)
+                interpreter.translate(input)
             }
         } else {
             assertThrows<AssertionError> {
-                interpreter.addNewCommand(input)
+                interpreter.translate(input)
             }
         }
     }
 
     @ParameterizedTest
-    @MethodSource("real Brainfuck commands")
+    @MethodSource("real brainFuck commands")
     fun `Check if script is interpreted right`(input: String, validOutput: String) {
-        interpreter.addNewCommand(input)
-        assertEquals(validOutput, interpreter.interpretCommand())
+        val interpreter = Interpreter()
+        assertEquals(validOutput, interpreter.translate(input))
 
     }
 }

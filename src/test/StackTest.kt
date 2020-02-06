@@ -9,9 +9,7 @@ internal class StackTest {
 
 
     companion object {
-        val command = "--[----->+<]>-----.+++..--.[--->+<]>----.+++[->+++<]>++.++.++++++++.------.[--->+<]>---.-."
-        var mapBrackets = IntArray(command.length)
-
+        private const val command = "--[----->+<]>-----.+++..--.[--->+<]>----.+++[->+++<]>++.++.++++++++.------.[--->+<]>---.-."
 
         fun `data for adding brackets`() = Stream.of(
             Arguments.of(

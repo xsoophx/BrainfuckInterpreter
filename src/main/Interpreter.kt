@@ -1,22 +1,9 @@
 package main
 
 import java.lang.IllegalArgumentException
-
-
-fun main() {
-    val currentBaseClass = Interpreter()
-}
+import kotlin.test.assertNotNull
 
 class Interpreter {
-
-    private lateinit var localCleanedUpCommand: String
-    private var counterOpeningBrackets = 0
-    private var counterClosingBrackets = 0
-    private var overallBracketCounter = 0
-
-    var isStackValid: Boolean = similarBrackets()
-
-    fun similarBrackets(): Boolean = (counterClosingBrackets == counterOpeningBrackets) && (overallBracketCounter < 0)
 
     private enum class ValidCharacters(val pairOfCommands: Pair<Char, Char>) {
         PointerIncrementDecrement(Pair('>', '<')),
@@ -55,31 +42,29 @@ class Interpreter {
 
     }
 
-    fun addNewCommand(command: String) {
-        localCleanedUpCommand = cleanedUpVariable(command)
-        if (!isStackValid)
-            println("Your command isn't valid")
-        return
+    fun translate(command: String?):String {
+        assertNotNull(command)
+        return interpretCommand(cleanedUpVariable(command))
+
     }
 
-
-    fun interpretCommand(): String{
-        val loopMap = BracketHelpStack(localCleanedUpCommand).getHelpMap()
+    private fun interpretCommand(command: String): String{
+        val loopMap = BracketHelpStack(command).getHelpMap()
         var codePosition = 0
         var arrayPointer = 0
-        val valueArray = MutableList<Byte>(1000) { it -> 0}
+        val valueArray = MutableList<Byte>(1000) {0}
         var returnString = ""
 
-        while (codePosition < localCleanedUpCommand.length) {
-            when(localCleanedUpCommand[codePosition]){
+        while (codePosition < command.length) {
+            when(command[codePosition]){
                 '>' -> ++arrayPointer
                 '<' -> --arrayPointer
                 '+' -> valueArray[arrayPointer] = (valueArray[arrayPointer] + 1).toByte()
                 '-' -> valueArray[arrayPointer] = (valueArray[arrayPointer] - 1).toByte()
                 '.' -> returnString += (valueArray[arrayPointer]).toChar()
-                ',' -> valueArray[arrayPointer] = (localCleanedUpCommand[codePosition]).toByte()
+                ',' -> valueArray[arrayPointer] = (command[codePosition]).toByte()
                 ']' -> if (valueArray[arrayPointer].toInt() != 0) codePosition = loopMap[codePosition]
-                '[' -> if (valueArray[arrayPointer].toInt() == 0)
+                '[' -> {}
                 else -> throw IllegalArgumentException()
             }
             codePosition++

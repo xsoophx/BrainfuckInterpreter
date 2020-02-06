@@ -2,7 +2,7 @@ package main
 
 class BracketHelpStack(command: String) {
     var stackList = setOf<Int>()
-    var loopList = IntArray(command.length)
+    private var loopList = IntArray(command.length)
 
     init {
         buildHelpStack(command)
